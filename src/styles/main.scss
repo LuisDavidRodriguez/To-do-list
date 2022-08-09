@@ -1,7 +1,7 @@
-@use '2_base/config';
+@import '2_base/config';
 
 $item-height: 45px;
-$font-family: 'Roboto', Arial, Helvetica, sans-serif;
+$font-family: 'Roboto', arial, helvetica, sans-serif;
 
 body {
   font-family: $font-family;
@@ -42,7 +42,7 @@ main {
     justify-content: space-between;
     align-items: center;
     padding: 0 5px;
-    height: $item-height; 
+    height: $item-height;
     border-bottom: 1px solid lightgrey;
 
     & .number {
@@ -52,12 +52,12 @@ main {
     & .description {
       width: 50%;
     }
-    
+
     & i {
       width: 20px;
     }
 
-    & [type= 'checkbox'] {
+    & [type='checkbox'] {
       width: 15px;
       height: 15px;
     }
@@ -74,7 +74,4 @@ main {
   & .line-trhough {
     text-decoration: line-through;
   }
- 
 }
-
-
