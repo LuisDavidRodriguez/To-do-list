@@ -21,21 +21,23 @@ export default class ActivitiesManager {
       const checkBox = document.createElement('INPUT');
       const numTask = document.createElement('p');
       const paragraph = document.createElement('p');
-      const icon = document.createElement('i');
+      const iconMore = document.createElement('i');
 
       checkBox.setAttribute('type', 'checkbox');
+      checkBox.id = `checktask${i}`;
+      iconMore.id = `iconMore${i}`;
 
       liContainer.classList.add('items-container__item');
       numTask.classList.add('number');
       paragraph.classList.add('description');
-      icon.className = 'fa-solid fa-ellipsis-vertical';
+      iconMore.className = 'fa-solid fa-ellipsis-vertical';
 
       checkBox.checked = completed;
       numTask.textContent = number;
       paragraph.textContent = description;
       if (completed) paragraph.classList.add('line-trhough');
 
-      liContainer.append(checkBox, numTask, paragraph, icon);
+      liContainer.append(checkBox, numTask, paragraph, iconMore);
       this.#taskContainer.append(liContainer);
     }
     this.createDeleteButton();
