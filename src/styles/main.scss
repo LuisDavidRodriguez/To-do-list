@@ -1,3 +1,77 @@
+@import '2_base/config';
+
+$item-height: 45px;
+$font-family: 'Roboto', arial, helvetica, sans-serif;
+
 body {
-  background-color: plum;
+  font-family: $font-family;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.items-container {
+  width: 500px;
+  height: 400px;
+  box-shadow: 3px 3px 5px 5px lightgray;
+  display: flex;
+  flex-direction: column;
+
+  #{&}__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: $item-height;
+    padding: 0 5px;
+    border-bottom: 1px solid lightgrey;
+
+    & input {
+      border: none;
+      width: 80%;
+      height: 80%;
+      padding: 2px;
+      font-style: italic;
+    }
+  }
+
+  #{&}__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5px;
+    height: $item-height;
+    border-bottom: 1px solid lightgrey;
+
+    & .number {
+      width: 10%;
+    }
+
+    & .description {
+      width: 50%;
+    }
+
+    & i {
+      width: 20px;
+    }
+
+    & [type='checkbox'] {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  & .delete-button {
+    justify-content: center;
+    height: $item-height + 10px;
+    background-color: rgb(236, 236, 236);
+    color: gray;
+    margin-top: auto;
+  }
+
+  & .line-trhough {
+    text-decoration: line-through;
+  }
 }
