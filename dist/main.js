@@ -1,10 +1,57 @@
 "use strict";
 (self["webpackChunkto_do_list"] = self["webpackChunkto_do_list"] || []).push([["main"],{
 
-/***/ "./src/activities.js":
-/*!***************************!*\
-  !*** ./src/activities.js ***!
-  \***************************/
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _styles_main_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./styles/main.scss */ "./src/styles/main.scss");
+/* harmony import */ var _modules_activities_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/activities.js */ "./src/modules/activities.js");
+/* harmony import */ var _modules_dataStorage_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/dataStorage.js */ "./src/modules/dataStorage.js");
+
+
+
+var itemContainer = document.querySelector('#itemsContainer');
+var addInput = document.querySelector('#addTask');
+var refresh = document.querySelector('#refresh');
+var buttonAdd = document.querySelector('#enter');
+var buttonDelete = document.querySelector('#buttonDelete');
+var activitiesManager = new _modules_activities_js__WEBPACK_IMPORTED_MODULE_1__["default"](itemContainer, _modules_dataStorage_js__WEBPACK_IMPORTED_MODULE_2__);
+activitiesManager.refresh();
+addInput.addEventListener('keypress', function (event) {
+  if (event.key === 'Enter') {
+    // code for enter
+    var value = addInput.value.trim();
+    addInput.value = '';
+    if (value !== '') activitiesManager.addTask(value);
+  }
+});
+buttonAdd.addEventListener('click', function () {
+  var value = addInput.value.trim();
+  addInput.value = '';
+  if (value !== '') activitiesManager.addTask(value);
+});
+refresh.addEventListener('click', function () {
+  refresh.classList.add('fa-spin');
+  itemContainer.innerHTML = '';
+  setTimeout(function () {
+    refresh.classList.remove('fa-spin');
+    activitiesManager.refresh();
+  }, 2000);
+});
+buttonDelete.addEventListener('click', function () {
+  activitiesManager.deleteAllComplete();
+});
+
+/***/ }),
+
+/***/ "./src/modules/activities.js":
+/*!***********************************!*\
+  !*** ./src/modules/activities.js ***!
+  \***********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -17,9 +64,13 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
+function _classPrivateMethodInitSpec(obj, privateSet) { _checkPrivateRedeclaration(obj, privateSet); privateSet.add(obj); }
+
 function _classPrivateFieldInitSpec(obj, privateMap, value) { _checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
 
 function _checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
+
+function _classPrivateMethodGet(receiver, privateSet, fn) { if (!privateSet.has(receiver)) { throw new TypeError("attempted to get private field on non-instance"); } return fn; }
 
 function _classPrivateFieldGet(receiver, privateMap) { var descriptor = _classExtractFieldDescriptor(receiver, privateMap, "get"); return _classApplyDescriptorGet(receiver, descriptor); }
 
@@ -37,12 +88,34 @@ var _createTask = /*#__PURE__*/new WeakMap();
 
 var _taskContainer = /*#__PURE__*/new WeakMap();
 
+var _storage = /*#__PURE__*/new WeakMap();
+
+var _saveLocal = /*#__PURE__*/new WeakSet();
+
+var _addToState = /*#__PURE__*/new WeakSet();
+
+var _deleteFromState = /*#__PURE__*/new WeakSet();
+
+var _updateState = /*#__PURE__*/new WeakSet();
+
+var _createItem = /*#__PURE__*/new WeakSet();
+
 /* eslint-disable lines-between-class-members */
 
 /* eslint-disable no-plusplus */
 var ActivitiesManager = /*#__PURE__*/function () {
-  function ActivitiesManager(taskContainer) {
+  function ActivitiesManager(taskContainer, storage) {
     _classCallCheck(this, ActivitiesManager);
+
+    _classPrivateMethodInitSpec(this, _createItem);
+
+    _classPrivateMethodInitSpec(this, _updateState);
+
+    _classPrivateMethodInitSpec(this, _deleteFromState);
+
+    _classPrivateMethodInitSpec(this, _addToState);
+
+    _classPrivateMethodInitSpec(this, _saveLocal);
 
     _classPrivateFieldInitSpec(this, _activitiesArr, {
       writable: true,
@@ -65,95 +138,289 @@ var ActivitiesManager = /*#__PURE__*/function () {
       value: void 0
     });
 
+    _classPrivateFieldInitSpec(this, _storage, {
+      writable: true,
+      value: void 0
+    });
+
     _classPrivateFieldSet(this, _taskContainer, taskContainer);
+
+    _classPrivateFieldSet(this, _storage, storage);
+
+    this.storageAvailable = storage.storageAvailable();
+    if (this.storageAvailable) _classPrivateFieldSet(this, _activitiesArr, _classPrivateFieldGet(this, _storage).getTask());
   }
 
   _createClass(ActivitiesManager, [{
+    key: "size",
+    get: function get() {
+      return _classPrivateFieldGet(this, _activitiesArr).length;
+    }
+  }, {
     key: "addTask",
-    value: function addTask(description, completed, number) {
-      _classPrivateFieldGet(this, _activitiesArr).push(_classPrivateFieldGet(this, _createTask).call(this, description, completed, number));
+    value: function addTask(description) {
+      var id = this.size;
+
+      var object = _classPrivateFieldGet(this, _createTask).call(this, description, false, id);
+
+      _classPrivateMethodGet(this, _addToState, _addToState2).call(this, object);
+
+      var item = _classPrivateMethodGet(this, _createItem, _createItem2).call(this, object, id);
+
+      _classPrivateFieldGet(this, _taskContainer).append(item);
     }
   }, {
-    key: "displayTasks",
-    value: function displayTasks() {
+    key: "deleteAllComplete",
+    value: function deleteAllComplete() {
+      _classPrivateFieldSet(this, _activitiesArr, _classPrivateFieldGet(this, _activitiesArr).filter(function (_ref) {
+        var completed = _ref.completed;
+        return !completed;
+      }));
+
+      console.log(_classPrivateFieldGet(this, _activitiesArr));
+
+      _classPrivateMethodGet(this, _saveLocal, _saveLocal2).call(this);
+
+      this.refresh();
+    }
+  }, {
+    key: "refresh",
+    value: function refresh() {
+      _classPrivateFieldGet(this, _taskContainer).innerHTML = '';
+
       for (var i = 0; i < _classPrivateFieldGet(this, _activitiesArr).length; i++) {
-        var _classPrivateFieldGet2 = _classPrivateFieldGet(this, _activitiesArr)[i],
-            description = _classPrivateFieldGet2.description,
-            completed = _classPrivateFieldGet2.completed,
-            number = _classPrivateFieldGet2.number;
+        // update number according to index
+        _classPrivateFieldGet(this, _activitiesArr)[i].number = i;
 
-        var liContainer = document.createElement('li');
-        var checkBox = document.createElement('INPUT');
-        var numTask = document.createElement('p');
-        var paragraph = document.createElement('p');
-        var icon = document.createElement('i');
-        checkBox.setAttribute('type', 'checkbox');
-        liContainer.classList.add('items-container__item');
-        numTask.classList.add('number');
-        paragraph.classList.add('description');
-        icon.className = 'fa-solid fa-ellipsis-vertical';
-        checkBox.checked = completed;
-        numTask.textContent = number;
-        paragraph.textContent = description;
-        if (completed) paragraph.classList.add('line-trhough');
-        liContainer.append(checkBox, numTask, paragraph, icon);
+        var item = _classPrivateMethodGet(this, _createItem, _createItem2).call(this, _classPrivateFieldGet(this, _activitiesArr)[i], i);
 
-        _classPrivateFieldGet(this, _taskContainer).append(liContainer);
+        _classPrivateFieldGet(this, _taskContainer).append(item);
       }
+    } // eslint-disable-next-line class-methods-use-this
 
-      this.createDeleteButton();
-    }
-  }, {
-    key: "createDeleteButton",
-    value: function createDeleteButton() {
-      var liContainer = document.createElement('li');
-      liContainer.classList.add('items-container__item', 'delete-button');
-      liContainer.textContent = 'Clear all Completed';
-
-      _classPrivateFieldGet(this, _taskContainer).append(liContainer);
-    }
-  }, {
-    key: "createHeaders",
-    value: function createHeaders() {
-      var liTitle = document.createElement('li');
-      var liInput = document.createElement('li');
-      var titleIcon = document.createElement('i');
-      var addInput = document.createElement('INPUT');
-      var text = document.createTextNode("Today's To Do");
-      addInput.setAttribute('type', 'text');
-      addInput.setAttribute('required', '');
-      liTitle.append(text, titleIcon);
-      liInput.append(addInput);
-
-      _classPrivateFieldGet(this, _taskContainer).append(liTitle, liInput);
-    }
   }]);
 
   return ActivitiesManager;
 }();
 
+function _saveLocal2() {
+  if (this.storageAvailable) _classPrivateFieldGet(this, _storage).setTask(_classPrivateFieldGet(this, _activitiesArr));
+}
+
+function _addToState2(object) {
+  _classPrivateFieldGet(this, _activitiesArr).push(object);
+
+  _classPrivateMethodGet(this, _saveLocal, _saveLocal2).call(this);
+}
+
+function _deleteFromState2(index) {
+  _classPrivateFieldGet(this, _activitiesArr).splice(index, 1);
+
+  _classPrivateMethodGet(this, _saveLocal, _saveLocal2).call(this);
+
+  console.log(_classPrivateFieldGet(this, _activitiesArr));
+  this.refresh();
+}
+
+function _updateState2(position, object) {
+  console.log(object);
+  var desc = object.description,
+      comp = object.completed,
+      num = object.number;
+  console.log(comp);
+  if (desc !== undefined) _classPrivateFieldGet(this, _activitiesArr)[position].description = desc;
+  if (comp !== undefined) _classPrivateFieldGet(this, _activitiesArr)[position].completed = comp;
+  if (num !== undefined) _classPrivateFieldGet(this, _activitiesArr)[position].description = num;
+  console.log(_classPrivateFieldGet(this, _activitiesArr));
+
+  _classPrivateMethodGet(this, _saveLocal, _saveLocal2).call(this);
+}
+
+function _createItem2(_ref2, i) {
+  var _this = this;
+
+  var description = _ref2.description,
+      completed = _ref2.completed,
+      number = _ref2.number;
+  var liContainer = document.createElement('li');
+  var checkBox = document.createElement('INPUT');
+  checkBox.setAttribute('type', 'checkbox');
+  var numTask = document.createElement('p');
+  var inputTask = document.createElement('INPUT');
+  inputTask.setAttribute('type', 'text');
+  var iconMore = document.createElement('i');
+  var iconDelete = document.createElement('i');
+  var cancel = document.createElement('button');
+  liContainer.id = "itemBody".concat(i);
+  checkBox.id = "checkBox".concat(i);
+  numTask.id = "numTask".concat(i);
+  inputTask.id = "inputTask".concat(i);
+  iconMore.id = "iconMore".concat(i);
+  iconDelete.id = "iconDelete".concat(i);
+  cancel.id = "btnEdit".concat(i);
+  liContainer.classList.add('items-container__item');
+  numTask.classList.add('number');
+  inputTask.classList.add('description');
+  iconMore.className = 'fa-solid fa-ellipsis-vertical';
+  iconDelete.className = 'fa-solid fa-trash-can';
+  iconDelete.style.display = 'none';
+  cancel.className = 'btn-cancel';
+  cancel.style.display = 'none';
+  checkBox.checked = completed;
+  numTask.textContent = number;
+  inputTask.value = description;
+  inputTask.disabled = true;
+  cancel.textContent = 'cancel';
+  if (completed) inputTask.classList.add('line-trhough');
+  liContainer.append(checkBox, numTask, inputTask, cancel, iconMore, iconDelete);
+  checkBox.addEventListener('click', function (event) {
+    console.log(event);
+
+    _classPrivateMethodGet(_this, _updateState, _updateState2).call(_this, i, {
+      completed: checkBox.checked
+    });
+
+    if (checkBox.checked) {
+      inputTask.classList.add('line-trhough');
+    } else {
+      inputTask.classList.remove('line-trhough');
+    }
+  });
+  inputTask.addEventListener('change', function () {
+    console.log(inputTask.value);
+  });
+  inputTask.addEventListener('keypress', function (event) {
+    if (event.key === 'Enter') {
+      // code for enter
+      var value = inputTask.value.trim();
+      console.log(value);
+      liContainer.classList.remove('editor');
+      iconMore.style.display = 'block';
+      iconDelete.style.display = 'none';
+      cancel.style.display = 'none';
+      liContainer.classList.remove('editor');
+      inputTask.blur();
+      inputTask.disabled = true;
+
+      _classPrivateMethodGet(_this, _updateState, _updateState2).call(_this, i, {
+        description: value
+      });
+    }
+  });
+  iconDelete.addEventListener('click', function () {
+    liContainer.classList.add('invisible');
+    setTimeout(function () {
+      liContainer.remove();
+
+      _classPrivateMethodGet(_this, _deleteFromState, _deleteFromState2).call(_this, i);
+    }, 1000);
+  });
+  this.counter = 1;
+  this.idInterval = undefined;
+  var previusImput;
+  iconMore.addEventListener('mousedown', function () {
+    iconMore.title = _this.counter;
+    iconMore.classList.add('hold', 'fa-spin');
+    _this.idInterval = setInterval(function () {
+      console.log('mousedown', _this.counter);
+      _this.counter++;
+
+      if (_this.counter === 2) {
+        clearInterval(_this.id);
+        iconMore.style.display = 'none';
+        iconDelete.style.display = 'block';
+        cancel.style.display = 'block';
+        liContainer.classList.add('editor');
+        previusImput = inputTask.value;
+        inputTask.disabled = false;
+      }
+    }, 1000);
+  });
+  document.addEventListener('mouseup', function () {
+    _this.counter = 1;
+    clearInterval(_this.idInterval);
+    iconMore.classList.remove('hold', 'fa-spin');
+  });
+  cancel.addEventListener('click', function () {
+    iconMore.style.display = 'block';
+    iconDelete.style.display = 'none';
+    cancel.style.display = 'none';
+    liContainer.classList.remove('editor');
+    inputTask.disabled = true;
+    inputTask.value = previusImput;
+  });
+  return liContainer;
+}
+
 
 
 /***/ }),
 
-/***/ "./src/index.js":
-/*!**********************!*\
-  !*** ./src/index.js ***!
-  \**********************/
+/***/ "./src/modules/dataStorage.js":
+/*!************************************!*\
+  !*** ./src/modules/dataStorage.js ***!
+  \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _styles_main_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./styles/main.scss */ "./src/styles/main.scss");
-/* harmony import */ var _activities_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./activities.js */ "./src/activities.js");
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "getTask": () => (/* binding */ getTask),
+/* harmony export */   "setTask": () => (/* binding */ setTask),
+/* harmony export */   "storageAvailable": () => (/* binding */ storageAvailable)
+/* harmony export */ });
+var LOCAL_STORAGE = 'localStorage';
+var TASK_DATA = 'taskData';
+var taskData = [];
+/**
+ * If is the first time the software run in one browser load the default data
+ * if not you will have an exeption
+ */
+
+var setUp = function setUp() {
+  if (localStorage.getItem(TASK_DATA) === null) {
+    localStorage.setItem(TASK_DATA, JSON.stringify(taskData));
+  }
+};
+/**
+ * You must ask if the browser support the localStorage before use it
+ * this function also set up the initial values
+ * @param {*} type string
+ * @returns Boolean if the browser supports local storage
+ */
 
 
-var itemContainer = document.querySelector('#itemsContainer');
-var activitiesManager = new _activities_js__WEBPACK_IMPORTED_MODULE_1__["default"](itemContainer);
-activitiesManager.addTask('walk the doog', false, 0);
-activitiesManager.addTask('Cooking dinner', false, 1);
-activitiesManager.addTask('Study', true, 2);
-activitiesManager.addTask('Go to the gym', true, 3);
-activitiesManager.displayTasks();
+function storageAvailable() {
+  var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : LOCAL_STORAGE;
+  var storage;
+
+  try {
+    storage = window[type];
+    var test = '__storage_test__';
+    storage.setItem(test, test);
+    storage.removeItem(test);
+    setUp();
+    return true;
+  } catch (exeption) {
+    return exeption instanceof DOMException && (exeption.code === 22 || exeption.code === 1014 || exeption.name === 'QuotaExceededError' || exeption.name === 'NS_ERROR_DOM_QUOTA_REACHED') && storage && storage.length !== 0;
+    /* the code 22 check everything exept firefox
+    the code 1014 check firefox
+    we also need to check for the name because sometimes the code is not present
+    everithing exept firefox  QuotaExceededError
+    firefox NS_ERROR_DOM_QUOTA_REACHED
+    this last part has not sunk in my mind yet :(
+    acknowledge QuotaExceededError only if there's something already stored */
+  }
+}
+
+var setTask = function setTask(arrBooks) {
+  return localStorage.setItem(TASK_DATA, JSON.stringify(arrBooks));
+};
+
+var getTask = function getTask() {
+  return JSON.parse(localStorage.getItem(TASK_DATA));
+};
+
+
 
 /***/ }),
 
@@ -176,7 +443,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nul {\n  padding-inline-start: 0;\n  list-style: none;\n  margin-block-start: 0;\n  margin-block-end: 0;\n}\n\na {\n  text-decoration: none;\n  word-wrap: break-word;\n}\n\n::before {\n  box-sizing: border-box;\n}\n\n::after {\n  box-sizing: border-box;\n}\n\nbody {\n  font-family: \"Roboto\", arial, helvetica, sans-serif;\n}\n\nmain {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.items-container {\n  width: 500px;\n  height: 400px;\n  box-shadow: 3px 3px 5px 5px lightgray;\n  display: flex;\n  flex-direction: column;\n}\n.items-container .items-container__header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  height: 45px;\n  padding: 0 5px;\n  border-bottom: 1px solid lightgrey;\n}\n.items-container .items-container__header input {\n  border: none;\n  width: 80%;\n  height: 80%;\n  padding: 2px;\n  font-style: italic;\n}\n.items-container .items-container__item {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 5px;\n  height: 45px;\n  border-bottom: 1px solid lightgrey;\n}\n.items-container .items-container__item .number {\n  width: 10%;\n}\n.items-container .items-container__item .description {\n  width: 50%;\n}\n.items-container .items-container__item i {\n  width: 20px;\n}\n.items-container .items-container__item [type=checkbox] {\n  width: 15px;\n  height: 15px;\n}\n.items-container .delete-button {\n  justify-content: center;\n  height: 55px;\n  background-color: rgb(236, 236, 236);\n  color: gray;\n  margin-top: auto;\n}\n.items-container .line-trhough {\n  text-decoration: line-through;\n}", "",{"version":3,"sources":["webpack://./src/styles/2_base/_config.scss","webpack://./src/styles/main.scss"],"names":[],"mappings":"AAAA;EACE,SAAA;EACA,UAAA;EACA,sBAAA;ACCF;;ADGA;EACE,uBAAA;EACA,gBAAA;EACA,qBAAA;EACA,mBAAA;ACAF;;ADGA;EACE,qBAAA;EACA,qBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;AAnBA;EACE,mDAHY;AAyBd;;AAnBA;EACE,aAAA;EACA,sBAAA;EACA,mBAAA;AAsBF;;AAnBA;EACE,YAAA;EACA,aAAA;EACA,qCAAA;EACA,aAAA;EACA,sBAAA;AAsBF;AApBE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,YAxBU;EAyBV,cAAA;EACA,kCAAA;AAsBJ;AApBI;EACE,YAAA;EACA,UAAA;EACA,WAAA;EACA,YAAA;EACA,kBAAA;AAsBN;AAlBE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,cAAA;EACA,YA1CU;EA2CV,kCAAA;AAoBJ;AAlBI;EACE,UAAA;AAoBN;AAjBI;EACE,UAAA;AAmBN;AAhBI;EACE,WAAA;AAkBN;AAfI;EACE,WAAA;EACA,YAAA;AAiBN;AAbE;EACE,uBAAA;EACA,YAAA;EACA,oCAAA;EACA,WAAA;EACA,gBAAA;AAeJ;AAZE;EACE,6BAAA;AAcJ","sourcesContent":["* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\n//yeah I get ride of that hideous padding once and for all for all my ul!!\nul {\n  padding-inline-start: 0;\n  list-style: none;\n  margin-block-start: 0;\n  margin-block-end: 0;\n}\n\na {\n  text-decoration: none;\n  word-wrap: break-word;\n}\n\n::before {\n  box-sizing: border-box;\n}\n\n::after {\n  box-sizing: border-box;\n}\n","@import '2_base/config';\r\n\r\n$item-height: 45px;\r\n$font-family: 'Roboto', arial, helvetica, sans-serif;\r\n\r\nbody {\r\n  font-family: $font-family;\r\n}\r\n\r\nmain {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n}\r\n\r\n.items-container {\r\n  width: 500px;\r\n  height: 400px;\r\n  box-shadow: 3px 3px 5px 5px lightgray;\r\n  display: flex;\r\n  flex-direction: column;\r\n\r\n  #{&}__header {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    height: $item-height;\r\n    padding: 0 5px;\r\n    border-bottom: 1px solid lightgrey;\r\n\r\n    & input {\r\n      border: none;\r\n      width: 80%;\r\n      height: 80%;\r\n      padding: 2px;\r\n      font-style: italic;\r\n    }\r\n  }\r\n\r\n  #{&}__item {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    padding: 0 5px;\r\n    height: $item-height;\r\n    border-bottom: 1px solid lightgrey;\r\n\r\n    & .number {\r\n      width: 10%;\r\n    }\r\n\r\n    & .description {\r\n      width: 50%;\r\n    }\r\n\r\n    & i {\r\n      width: 20px;\r\n    }\r\n\r\n    & [type='checkbox'] {\r\n      width: 15px;\r\n      height: 15px;\r\n    }\r\n  }\r\n\r\n  & .delete-button {\r\n    justify-content: center;\r\n    height: $item-height + 10px;\r\n    background-color: rgb(236, 236, 236);\r\n    color: gray;\r\n    margin-top: auto;\r\n  }\r\n\r\n  & .line-trhough {\r\n    text-decoration: line-through;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nul {\n  padding-inline-start: 0;\n  list-style: none;\n  margin-block-start: 0;\n  margin-block-end: 0;\n}\n\na {\n  text-decoration: none;\n  word-wrap: break-word;\n}\n\n::before {\n  box-sizing: border-box;\n}\n\n::after {\n  box-sizing: border-box;\n}\n\nbody {\n  font-family: \"Roboto\", arial, helvetica, sans-serif;\n}\n\nmain {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.container {\n  width: 500px;\n  min-height: 400px;\n  max-height: 800px;\n  box-shadow: 3px 3px 5px 5px lightgray;\n  display: flex;\n  flex-direction: column;\n}\n.container .container__header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  min-height: 45px;\n  padding: 0 5px;\n  border-bottom: 1px solid lightgrey;\n}\n.container .container__header input {\n  border: none;\n  width: 80%;\n  height: 80%;\n  padding: 5px;\n  font-style: italic;\n}\n.container .container__header i {\n  text-align: center;\n  width: 20px;\n}\n.container .container__header i:hover {\n  cursor: pointer;\n}\n.container .container__footer {\n  height: 55px;\n  display: flex;\n  margin-top: auto;\n}\n.container .container__footer .delete-button {\n  justify-content: center;\n  width: 100%;\n  border: none;\n  height: 55px;\n  background-color: rgb(236, 236, 236);\n  color: gray;\n}\n.container .container__footer .delete-button:hover {\n  cursor: pointer;\n}\n\n.items-container {\n  width: 100%;\n  overflow-y: scroll;\n}\n.items-container .items-container__item {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 5px;\n  height: 45px;\n  border-bottom: 1px solid lightgrey;\n  transition: all 1s linear;\n}\n.items-container .items-container__item.invisible {\n  transform: translateX(-500px);\n}\n.items-container .items-container__item.editor {\n  background-color: blanchedalmond;\n}\n.items-container .items-container__item .number {\n  width: 10%;\n}\n.items-container .items-container__item .description {\n  width: 50%;\n  border: none;\n  background-color: transparent;\n  padding: 0 3px;\n}\n.items-container .items-container__item .description:enabled {\n  color: black;\n  border: 1px solid gray;\n}\n.items-container .items-container__item .description:disabled {\n  color: black;\n}\n.items-container .items-container__item i {\n  text-align: center;\n  width: 20px;\n}\n.items-container .items-container__item i:hover {\n  cursor: pointer;\n}\n.items-container .items-container__item i.hold {\n  transition: all 2s linear;\n  transform: scale(1.5);\n}\n.items-container .items-container__item [type=checkbox] {\n  width: 15px;\n  height: 15px;\n}\n.items-container .items-container__item .btn-cancel {\n  background-color: transparent;\n  border: none;\n  text-decoration: underline;\n  font-size: 0.6em;\n  color: red;\n}\n.items-container .items-container__item .btn-cancel:hover {\n  cursor: pointer;\n}\n.items-container .line-trhough {\n  text-decoration: line-through;\n}", "",{"version":3,"sources":["webpack://./src/styles/2_base/_config.scss","webpack://./src/styles/main.scss"],"names":[],"mappings":"AAAA;EACE,SAAA;EACA,UAAA;EACA,sBAAA;ACCF;;ADGA;EACE,uBAAA;EACA,gBAAA;EACA,qBAAA;EACA,mBAAA;ACAF;;ADGA;EACE,qBAAA;EACA,qBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;AAnBA;EACE,mDAHY;AAyBd;;AAnBA;EACE,aAAA;EACA,sBAAA;EACA,mBAAA;AAsBF;;AAnBA;EACE,YAAA;EACA,iBAAA;EACA,iBAAA;EACA,qCAAA;EACA,aAAA;EACA,sBAAA;AAsBF;AApBE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,gBAzBU;EA0BV,cAAA;EACA,kCAAA;AAsBJ;AApBI;EACE,YAAA;EACA,UAAA;EACA,WAAA;EACA,YAAA;EACA,kBAAA;AAsBN;AAnBI;EACE,kBAAA;EACA,WAAA;AAqBN;AAnBM;EACE,eAAA;AAqBR;AAhBE;EACE,YAAA;EACA,aAAA;EACA,gBAAA;AAkBJ;AAhBI;EACE,uBAAA;EACA,WAAA;EACA,YAAA;EACA,YAAA;EACA,oCAAA;EACA,WAAA;AAkBN;AAhBM;EACE,eAAA;AAkBR;;AAZA;EACE,WAAA;EACA,kBAAA;AAeF;AAbE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,cAAA;EACA,YA5EU;EA6EV,kCAAA;EACA,yBAAA;AAeJ;AAbI;EACE,6BAAA;AAeN;AAZI;EACE,gCAAA;AAcN;AAXI;EACE,UAAA;AAaN;AAVI;EACE,UAAA;EACA,YAAA;EACA,6BAAA;EACA,cAAA;AAYN;AAVM;EACE,YAAA;EACA,sBAAA;AAYR;AATM;EACE,YAAA;AAWR;AAPI;EACE,kBAAA;EACA,WAAA;AASN;AAPM;EACE,eAAA;AASR;AANM;EACE,yBAAA;EACA,qBAAA;AAQR;AAJI;EACE,WAAA;EACA,YAAA;AAMN;AAHI;EACE,6BAAA;EACA,YAAA;EACA,0BAAA;EACA,gBAAA;EACA,UAAA;AAKN;AAHM;EACE,eAAA;AAKR;AAAE;EACE,6BAAA;AAEJ","sourcesContent":["* {\r\n  margin: 0;\r\n  padding: 0;\r\n  box-sizing: border-box;\r\n}\r\n\r\n//yeah I get ride of that hideous padding once and for all for all my ul!!\r\nul {\r\n  padding-inline-start: 0;\r\n  list-style: none;\r\n  margin-block-start: 0;\r\n  margin-block-end: 0;\r\n}\r\n\r\na {\r\n  text-decoration: none;\r\n  word-wrap: break-word;\r\n}\r\n\r\n::before {\r\n  box-sizing: border-box;\r\n}\r\n\r\n::after {\r\n  box-sizing: border-box;\r\n}\r\n","@import '2_base/config';\r\n\r\n$item-height: 45px;\r\n$font-family: 'Roboto', arial, helvetica, sans-serif;\r\n\r\nbody {\r\n  font-family: $font-family;\r\n}\r\n\r\nmain {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n}\r\n\r\n.container {\r\n  width: 500px;\r\n  min-height: 400px;\r\n  max-height: 800px;\r\n  box-shadow: 3px 3px 5px 5px lightgray;\r\n  display: flex;\r\n  flex-direction: column;\r\n\r\n  #{&}__header {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    min-height: $item-height;\r\n    padding: 0 5px;\r\n    border-bottom: 1px solid lightgrey;\r\n\r\n    & input {\r\n      border: none;\r\n      width: 80%;\r\n      height: 80%;\r\n      padding: 5px;\r\n      font-style: italic;\r\n    }\r\n\r\n    & i {\r\n      text-align: center;\r\n      width: 20px;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n    }\r\n  }\r\n\r\n  #{&}__footer {\r\n    height: $item-height + 10;\r\n    display: flex;\r\n    margin-top: auto;\r\n\r\n    & .delete-button {\r\n      justify-content: center;\r\n      width: 100%;\r\n      border: none;\r\n      height: $item-height+10px;\r\n      background-color: rgb(236, 236, 236);\r\n      color: gray;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n    }\r\n  }\r\n}\r\n\r\n.items-container {\r\n  width: 100%;\r\n  overflow-y: scroll;\r\n\r\n  #{&}__item {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    padding: 0 5px;\r\n    height: $item-height;\r\n    border-bottom: 1px solid lightgrey;\r\n    transition: all 1s linear;\r\n\r\n    &.invisible {\r\n      transform: translateX(-500px);\r\n    }\r\n\r\n    &.editor {\r\n      background-color: blanchedalmond;\r\n    }\r\n\r\n    & .number {\r\n      width: 10%;\r\n    }\r\n\r\n    & .description {\r\n      width: 50%;\r\n      border: none;\r\n      background-color: transparent;\r\n      padding: 0 3px;\r\n\r\n      &:enabled {\r\n        color: black;\r\n        border: 1px solid gray;\r\n      }\r\n\r\n      &:disabled {\r\n        color: black;\r\n      }\r\n    }\r\n\r\n    & i {\r\n      text-align: center;\r\n      width: 20px;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n\r\n      &.hold {\r\n        transition: all 2s linear;\r\n        transform: scale(1.5);\r\n      }\r\n    }\r\n\r\n    & [type='checkbox'] {\r\n      width: 15px;\r\n      height: 15px;\r\n    }\r\n\r\n    & .btn-cancel {\r\n      background-color: transparent;\r\n      border: none;\r\n      text-decoration: underline;\r\n      font-size: 0.6em;\r\n      color: red;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n    }\r\n  }\r\n\r\n  & .line-trhough {\r\n    text-decoration: line-through;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
