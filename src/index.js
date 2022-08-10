@@ -1,18 +1,39 @@
 import './styles/main.scss';
-import ActivitiesManager from './activities.js';
+import ActivitiesManager from './modules/activities.js';
+import * as storage from './modules/dataStorage.js';
 
 const itemContainer = document.querySelector('#itemsContainer');
+const addInput = document.querySelector('#addTask');
+const refresh = document.querySelector('#refresh');
+const buttonAdd = document.querySelector('#enter');
+const buttonDelete = document.querySelector('#buttonDelete');
 
-const activitiesManager = new ActivitiesManager(itemContainer);
+const activitiesManager = new ActivitiesManager(itemContainer, storage);
+activitiesManager.refresh();
+addInput.addEventListener('keypress', (event) => {
+  if (event.key === 'Enter') {
+    // code for enter
+    const value = addInput.value.trim();
+    addInput.value = '';
+    if (value !== '') activitiesManager.addTask(value);
+  }
+});
 
-activitiesManager.addTask('walk the doog', true, 0);
-activitiesManager.addTask('Cooking dinner', true, 1);
-activitiesManager.addTask('Study', true, 2);
-activitiesManager.addTask('Go to the gym', true, 3);
-activitiesManager.displayTasks();
+buttonAdd.addEventListener('click', () => {
+  const value = addInput.value.trim();
+  addInput.value = '';
+  if (value !== '') activitiesManager.addTask(value);
+});
 
-itemContainer.addEventListener('click', (event) => {
-  const { id } = event.target;
-  const regex = /(?<=checktask)\d+$/;
-  console.log(id);
+refresh.addEventListener('click', () => {
+  refresh.classList.add('fa-spin');
+  itemContainer.innerHTML = '';
+  setTimeout(() => {
+    refresh.classList.remove('fa-spin');
+    activitiesManager.refresh();
+  }, 2000);
+});
+
+buttonDelete.addEventListener('click', () => {
+  activitiesManager.deleteAllComplete();
 });

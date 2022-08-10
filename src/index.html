@@ -12,12 +12,16 @@
 
     <main>
         <h1>To do list</h1>
-        <div>
-            <ul id="itemsContainer" class="items-container">
-                <li class="items-container__header">Today's to Do <i class="fa-solid fa-arrows-rotate"></i></li>
-                <li class="items-container__header"><input type="text" placeholder="Add to your list..." required><i class="fa-solid fa-arrow-right-to-bracket"></i></li>
+        <div class="container">
+            <div class="container__header">Today's to Do <i id="refresh" class="fa-solid fa-arrows-rotate"></i></div>
+            <div class="container__header"><input id="addTask" type="text" placeholder="Add to your list..." required><i id="enter" class="fa-solid fa-arrow-right-to-bracket"></i></div>
 
+            <ul id="itemsContainer" class="items-container">
+                
             </ul>
+            <div class="container__footer">
+                <button id="buttonDelete" class="delete-button" type="button">Clear all done</button>              
+            </div>
         </div>
        
     </main>
