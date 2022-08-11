@@ -80,7 +80,7 @@ main {
     padding: 0 5px;
     height: $item-height;
     border-bottom: 1px solid lightgrey;
-    transition: all 0.5s linear; 
+    transition: all 0.5s linear;
 
     &.invisible {
       transition: all 1s linear;
