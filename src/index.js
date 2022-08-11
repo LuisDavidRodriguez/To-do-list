@@ -1,6 +1,7 @@
 import './styles/main.scss';
 import ActivitiesManager from './modules/activities.js';
 import * as storage from './modules/dataStorage.js';
+import draggListeners from './modules/dragg.js';
 
 const itemContainer = document.querySelector('#itemsContainer');
 const addInput = document.querySelector('#addTask');
@@ -37,3 +38,5 @@ refresh.addEventListener('click', () => {
 buttonDelete.addEventListener('click', () => {
   activitiesManager.deleteAllComplete();
 });
+
+draggListeners(activitiesManager);
