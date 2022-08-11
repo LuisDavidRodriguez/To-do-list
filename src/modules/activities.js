@@ -49,16 +49,24 @@ export default class ActivitiesManager {
     this.refresh();
   }
 
+  updatePosition(index, newIndex) {
+    // console.log(`in update position--- index to uptate:${index}  -- new index ${newIndex}`);
+    const temp = [...this.#activitiesArr];
+    const elementToMove = temp.splice(index, 1);
+    temp.splice(newIndex, 0, ...elementToMove);
+
+    this.#activitiesArr = [...temp];
+    this.#saveLocal();
+    this.refresh();
+  }
+
   #updateState(position, object) {
-    console.log(object);
     const { description: desc, completed: comp, number: num } = object;
-    console.log(comp);
 
     if (desc !== undefined) this.#activitiesArr[position].description = desc;
     if (comp !== undefined) this.#activitiesArr[position].completed = comp;
     if (num !== undefined) this.#activitiesArr[position].description = num;
 
-    console.log(this.#activitiesArr);
     this.#saveLocal();
   }
 
@@ -94,12 +102,13 @@ export default class ActivitiesManager {
     cancel.id = `btnEdit${i}`;
 
     liContainer.classList.add('items-container__item');
+    liContainer.setAttribute('draggable', true);
     numTask.classList.add('number');
     inputTask.classList.add('description');
     iconMore.className = 'fa-solid fa-ellipsis-vertical';
     iconDelete.className = 'fa-solid fa-trash-can';
-    iconDelete.style.display = 'none';
     cancel.className = 'btn-cancel';
+    iconDelete.style.display = 'none';
     cancel.style.display = 'none';
 
     checkBox.checked = completed;

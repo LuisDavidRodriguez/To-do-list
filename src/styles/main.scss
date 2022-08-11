@@ -70,18 +70,26 @@ main {
 .items-container {
   width: 100%;
   overflow-y: scroll;
+  position: relative;
 
   #{&}__item {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     padding: 0 5px;
     height: $item-height;
     border-bottom: 1px solid lightgrey;
-    transition: all 1s linear;
+    transition: all 0.5s linear; 
 
     &.invisible {
+      transition: all 1s linear;
       transform: translateX(-500px);
+    }
+
+    &:active {
+      background-color: rgba(255, 208, 0, 0.712);
+      border: 2px solid;
     }
 
     &.editor {
