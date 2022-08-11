@@ -17,6 +17,7 @@ function clearIndtervals() {
   // this error happen if you click on the 3 dots icon and
   // at the same time you dragg, the setInterval go away
   // i still workin on it
+  console.log('clear intervals');
   for (let index = 0; index < 20; index++) {
     clearInterval(index);
   }
@@ -86,6 +87,7 @@ export default function draggListeners(activitiesManager) {
     console.log('drop on: ', event.target);
     const dropContainer = event.target;
     pixelsEnd = event.screenY;
+    clearIndtervals();
     console.log('desplacement= from: ', pixelsStart, ' to:', pixelsEnd, ' total= ', pixelsEnd - pixelsStart);
     if (regexListParent.test(dropContainer.id)) {
       /*
@@ -98,7 +100,6 @@ export default function draggListeners(activitiesManager) {
       elementDraged.style.position = 'absolute';
       setTimeout(() => {
         // set a delay to allow the animation running before refresh
-        clearIndtervals();
         activitiesManager.updatePosition(indexInDragg, indexInOver);
       }, 500);
     }

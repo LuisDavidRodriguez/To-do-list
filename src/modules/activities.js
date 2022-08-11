@@ -169,7 +169,7 @@ export default class ActivitiesManager {
       this.idInterval = setInterval(() => {
         console.log('mousedown', this.counter);
         this.counter++;
-        if (this.counter === 2) {
+        if (this.counter >= 2) {
           clearInterval(this.id);
           iconMore.style.display = 'none';
           iconDelete.style.display = 'block';
