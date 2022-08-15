@@ -11,6 +11,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _styles_main_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./styles/main.scss */ "./src/styles/main.scss");
 /* harmony import */ var _modules_activities_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/activities.js */ "./src/modules/activities.js");
 /* harmony import */ var _modules_dataStorage_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/dataStorage.js */ "./src/modules/dataStorage.js");
+/* harmony import */ var _modules_dragg_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/dragg.js */ "./src/modules/dragg.js");
+
 
 
 
@@ -45,33 +47,7 @@ refresh.addEventListener('click', function () {
 buttonDelete.addEventListener('click', function () {
   activitiesManager.deleteAllComplete();
 });
-
-function printInformation(info) {//console.log(info);
-}
-
-var elementDraged = null;
-itemContainer.addEventListener('dragstart', function (event) {
-  console.log('drag started on: ', event);
-  elementDraged = event.target;
-  printInformation(event.clientX);
-});
-itemContainer.addEventListener('dragover', function (event) {
-  // prevent defult do allow drop
-  console.log('drag iver', event);
-  event.preventDefault();
-});
-itemContainer.addEventListener('drop', function (event) {// prevent defult actions (open as link for some elements)
-});
-itemContainer.addEventListener('dragend', function (event) {
-  console.log('drag end on: ', event);
-
-  if (event.dataTransfer !== null) {
-    console.log(event.dataTransfer);
-  }
-
-  printInformation(event.clientX);
-}, false);
-window.addEventListener('mousemove', printInformation);
+(0,_modules_dragg_js__WEBPACK_IMPORTED_MODULE_3__["default"])(activitiesManager);
 
 /***/ }),
 
@@ -85,6 +61,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ActivitiesManager)
 /* harmony export */ });
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -211,6 +199,21 @@ var ActivitiesManager = /*#__PURE__*/function () {
       this.refresh();
     }
   }, {
+    key: "updatePosition",
+    value: function updatePosition(index, newIndex) {
+      // console.log(`in update position--- index to uptate:${index}  -- new index ${newIndex}`);
+      var temp = _toConsumableArray(_classPrivateFieldGet(this, _activitiesArr));
+
+      var elementToMove = temp.splice(index, 1);
+      temp.splice.apply(temp, [newIndex, 0].concat(_toConsumableArray(elementToMove)));
+
+      _classPrivateFieldSet(this, _activitiesArr, _toConsumableArray(temp));
+
+      _classPrivateMethodGet(this, _saveLocal, _saveLocal2).call(this);
+
+      this.refresh();
+    }
+  }, {
     key: "refresh",
     value: function refresh() {
       _classPrivateFieldGet(this, _taskContainer).innerHTML = '';
@@ -250,15 +253,12 @@ function _deleteFromState2(index) {
 }
 
 function _updateState2(position, object) {
-  console.log(object);
   var desc = object.description,
       comp = object.completed,
       num = object.number;
-  console.log(comp);
   if (desc !== undefined) _classPrivateFieldGet(this, _activitiesArr)[position].description = desc;
   if (comp !== undefined) _classPrivateFieldGet(this, _activitiesArr)[position].completed = comp;
   if (num !== undefined) _classPrivateFieldGet(this, _activitiesArr)[position].description = num;
-  console.log(_classPrivateFieldGet(this, _activitiesArr));
 
   _classPrivateMethodGet(this, _saveLocal, _saveLocal2).call(this);
 }
@@ -353,7 +353,7 @@ function _createItem2(_ref2, i) {
       console.log('mousedown', _this.counter);
       _this.counter++;
 
-      if (_this.counter === 2) {
+      if (_this.counter >= 2) {
         clearInterval(_this.id);
         iconMore.style.display = 'none';
         iconDelete.style.display = 'block';
@@ -452,6 +452,135 @@ var getTask = function getTask() {
 
 /***/ }),
 
+/***/ "./src/modules/dragg.js":
+/*!******************************!*\
+  !*** ./src/modules/dragg.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ draggListeners)
+/* harmony export */ });
+/* eslint-disable no-plusplus */
+
+/** @author Luis David Rodriguez Valades */
+var itemContainer = document.querySelector('#itemsContainer');
+var elementDraged = null;
+var indexInDragg = null;
+var pixelsStart = null;
+var pixelsEnd = null;
+var regex = /itemBody/;
+var regexListParent = /itemsContainer/;
+var previousOver = null;
+var indexInOver = null;
+
+function clearIndtervals() {
+  // in case the set interval in the activities manager
+  // where we add a timer to the 3 dots buttons run away
+  // this error happen if you click on the 3 dots icon and
+  // at the same time you dragg, the setInterval go away
+  // i still workin on it
+  console.log('clear intervals');
+
+  for (var index = 0; index < 20; index++) {
+    clearInterval(index);
+  }
+}
+
+function draggListeners(activitiesManager) {
+  // dragg start is called whend start a dragg but deliver the target whom where started the dragg
+  itemContainer.addEventListener('dragstart', function (event) {
+    console.log("dragStart: dropEffect = ".concat(event.dataTransfer.dropEffect, " ; effectAllowed = ").concat(event.dataTransfer.effectAllowed));
+    console.log('drag started on: ', event);
+    elementDraged = event.target; // elementDraged.classList.add('dragg');
+
+    indexInDragg = parseInt(elementDraged.getElementsByClassName('number')[0].innerText, 10);
+    pixelsStart = event.screenY;
+    /*
+    * Add this element's id to the drag payload so the drop handler will
+    * know which element to add to its tree
+    */
+
+    event.dataTransfer.setData('text', event.target.id);
+    event.dataTransfer.effectAllowed = 'move';
+    clearIndtervals();
+  }); // dragover deliver the target is whom we are over!
+
+  itemContainer.addEventListener('dragover', function (event) {
+    // prevent defult do allow drop
+    event.preventDefault();
+
+    if (regex.test(event.target.id)) {
+      var targetInOver = event.target; // console.log('drag over', event.target);
+
+      indexInOver = parseInt(targetInOver.getElementsByClassName('number')[0].innerText, 10); // if the element in dragg is equals to the element in over we dont add the margin
+
+      console.log('indexInOver: ', indexInOver, '    indexInDragg: ', indexInDragg); // if boths index are equals I dont add any margin
+
+      if (indexInOver === indexInDragg) {
+        targetInOver.style.marginTop = '0';
+      } else if (indexInOver < indexInDragg) {
+        // check if the index in over is less than the index in dragg it is mean we are
+        // moving upwards we add the margin in the top
+        console.log('adding margin in top');
+        targetInOver.style.marginTop = '45px';
+        targetInOver.style.marginBottom = '0';
+      } else {
+        console.log('moving downwards');
+        targetInOver.style.marginTop = '0';
+        targetInOver.style.marginBottom = '45px';
+      }
+
+      if (previousOver !== event.target) {
+        if (previousOver) {
+          previousOver.style.marginTop = '0';
+          previousOver.style.marginBottom = '0';
+        }
+
+        previousOver = event.target;
+      }
+    } // Set the dropEffect to move
+
+
+    event.dataTransfer.dropEffect = 'move';
+  });
+  itemContainer.addEventListener('drop', function (event) {
+    // prevent defult actions (open as link for some elements)
+    event.preventDefault();
+    console.log('drop on: ', event.target);
+    var dropContainer = event.target;
+    pixelsEnd = event.screenY;
+    clearIndtervals();
+    console.log('desplacement= from: ', pixelsStart, ' to:', pixelsEnd, ' total= ', pixelsEnd - pixelsStart);
+
+    if (regexListParent.test(dropContainer.id)) {
+      /*
+      * if we drop the element in a new position but inside of the parent list not in an element li
+      * we not need to added to the doom again just change the last position and set that
+      * position has index and reorder the list
+      */
+      console.log('Element dropped in the list !', 'previous position: ', indexInDragg, ' new position: ', indexInOver);
+      elementDraged.style.transform = "translateY(".concat(pixelsEnd - pixelsStart + -45, "px)");
+      elementDraged.style.position = 'absolute';
+      setTimeout(function () {
+        // set a delay to allow the animation running before refresh
+        activitiesManager.updatePosition(indexInDragg, indexInOver);
+      }, 500);
+    }
+  }); // dragg end is called whend finish the dragg but deliver the target whom where finished the dragg
+
+  itemContainer.addEventListener('dragend', function (event) {
+    console.log('drag end on: ', event);
+
+    if (event.dataTransfer !== null) {
+      console.log(event.dataTransfer);
+    }
+  }, false);
+}
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/styles/main.scss":
 /*!***********************************************************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/styles/main.scss ***!
@@ -471,7 +600,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nul {\n  padding-inline-start: 0;\n  list-style: none;\n  margin-block-start: 0;\n  margin-block-end: 0;\n}\n\na {\n  text-decoration: none;\n  word-wrap: break-word;\n}\n\n::before {\n  box-sizing: border-box;\n}\n\n::after {\n  box-sizing: border-box;\n}\n\nbody {\n  font-family: \"Roboto\", arial, helvetica, sans-serif;\n}\n\nmain {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.container {\n  width: 500px;\n  min-height: 400px;\n  max-height: 800px;\n  box-shadow: 3px 3px 5px 5px lightgray;\n  display: flex;\n  flex-direction: column;\n}\n.container .container__header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  min-height: 45px;\n  padding: 0 5px;\n  border-bottom: 1px solid lightgrey;\n}\n.container .container__header input {\n  border: none;\n  width: 80%;\n  height: 80%;\n  padding: 5px;\n  font-style: italic;\n}\n.container .container__header i {\n  text-align: center;\n  width: 20px;\n}\n.container .container__header i:hover {\n  cursor: pointer;\n}\n.container .container__footer {\n  height: 55px;\n  display: flex;\n  margin-top: auto;\n}\n.container .container__footer .delete-button {\n  justify-content: center;\n  width: 100%;\n  border: none;\n  height: 55px;\n  background-color: rgb(236, 236, 236);\n  color: gray;\n}\n.container .container__footer .delete-button:hover {\n  cursor: pointer;\n}\n\n.items-container {\n  width: 100%;\n  overflow-y: scroll;\n}\n.items-container .items-container__item {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 5px;\n  height: 45px;\n  border-bottom: 1px solid lightgrey;\n  transition: all 1s linear;\n}\n.items-container .items-container__item.invisible {\n  transform: translateX(-500px);\n}\n.items-container .items-container__item.dragg {\n  opacity: 0.5;\n}\n.items-container .items-container__item.editor {\n  background-color: blanchedalmond;\n}\n.items-container .items-container__item .number {\n  width: 10%;\n}\n.items-container .items-container__item .description {\n  width: 50%;\n  border: none;\n  background-color: transparent;\n  padding: 0 3px;\n}\n.items-container .items-container__item .description:enabled {\n  color: black;\n  border: 1px solid gray;\n}\n.items-container .items-container__item .description:disabled {\n  color: black;\n}\n.items-container .items-container__item i {\n  text-align: center;\n  width: 20px;\n}\n.items-container .items-container__item i:hover {\n  cursor: pointer;\n}\n.items-container .items-container__item i.hold {\n  transition: all 2s linear;\n  transform: scale(1.5);\n}\n.items-container .items-container__item [type=checkbox] {\n  width: 15px;\n  height: 15px;\n}\n.items-container .items-container__item .btn-cancel {\n  background-color: transparent;\n  border: none;\n  text-decoration: underline;\n  font-size: 0.6em;\n  color: red;\n}\n.items-container .items-container__item .btn-cancel:hover {\n  cursor: pointer;\n}\n.items-container .line-trhough {\n  text-decoration: line-through;\n}", "",{"version":3,"sources":["webpack://./src/styles/2_base/_config.scss","webpack://./src/styles/main.scss"],"names":[],"mappings":"AAAA;EACE,SAAA;EACA,UAAA;EACA,sBAAA;ACCF;;ADGA;EACE,uBAAA;EACA,gBAAA;EACA,qBAAA;EACA,mBAAA;ACAF;;ADGA;EACE,qBAAA;EACA,qBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;AAnBA;EACE,mDAHY;AAyBd;;AAnBA;EACE,aAAA;EACA,sBAAA;EACA,mBAAA;AAsBF;;AAnBA;EACE,YAAA;EACA,iBAAA;EACA,iBAAA;EACA,qCAAA;EACA,aAAA;EACA,sBAAA;AAsBF;AApBE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,gBAzBU;EA0BV,cAAA;EACA,kCAAA;AAsBJ;AApBI;EACE,YAAA;EACA,UAAA;EACA,WAAA;EACA,YAAA;EACA,kBAAA;AAsBN;AAnBI;EACE,kBAAA;EACA,WAAA;AAqBN;AAnBM;EACE,eAAA;AAqBR;AAhBE;EACE,YAAA;EACA,aAAA;EACA,gBAAA;AAkBJ;AAhBI;EACE,uBAAA;EACA,WAAA;EACA,YAAA;EACA,YAAA;EACA,oCAAA;EACA,WAAA;AAkBN;AAhBM;EACE,eAAA;AAkBR;;AAZA;EACE,WAAA;EACA,kBAAA;AAeF;AAbE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,cAAA;EACA,YA5EU;EA6EV,kCAAA;EACA,yBAAA;AAeJ;AAbI;EACE,6BAAA;AAeN;AAZI;EACE,YAAA;AAcN;AAXI;EACE,gCAAA;AAaN;AAVI;EACE,UAAA;AAYN;AATI;EACE,UAAA;EACA,YAAA;EACA,6BAAA;EACA,cAAA;AAWN;AATM;EACE,YAAA;EACA,sBAAA;AAWR;AARM;EACE,YAAA;AAUR;AANI;EACE,kBAAA;EACA,WAAA;AAQN;AANM;EACE,eAAA;AAQR;AALM;EACE,yBAAA;EACA,qBAAA;AAOR;AAHI;EACE,WAAA;EACA,YAAA;AAKN;AAFI;EACE,6BAAA;EACA,YAAA;EACA,0BAAA;EACA,gBAAA;EACA,UAAA;AAIN;AAFM;EACE,eAAA;AAIR;AACE;EACE,6BAAA;AACJ","sourcesContent":["* {\r\n  margin: 0;\r\n  padding: 0;\r\n  box-sizing: border-box;\r\n}\r\n\r\n//yeah I get ride of that hideous padding once and for all for all my ul!!\r\nul {\r\n  padding-inline-start: 0;\r\n  list-style: none;\r\n  margin-block-start: 0;\r\n  margin-block-end: 0;\r\n}\r\n\r\na {\r\n  text-decoration: none;\r\n  word-wrap: break-word;\r\n}\r\n\r\n::before {\r\n  box-sizing: border-box;\r\n}\r\n\r\n::after {\r\n  box-sizing: border-box;\r\n}\r\n","@import '2_base/config';\n\n$item-height: 45px;\n$font-family: 'Roboto', arial, helvetica, sans-serif;\n\nbody {\n  font-family: $font-family;\n}\n\nmain {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.container {\n  width: 500px;\n  min-height: 400px;\n  max-height: 800px;\n  box-shadow: 3px 3px 5px 5px lightgray;\n  display: flex;\n  flex-direction: column;\n\n  #{&}__header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    min-height: $item-height;\n    padding: 0 5px;\n    border-bottom: 1px solid lightgrey;\n\n    & input {\n      border: none;\n      width: 80%;\n      height: 80%;\n      padding: 5px;\n      font-style: italic;\n    }\n\n    & i {\n      text-align: center;\n      width: 20px;\n\n      &:hover {\n        cursor: pointer;\n      }\n    }\n  }\n\n  #{&}__footer {\n    height: $item-height + 10;\n    display: flex;\n    margin-top: auto;\n\n    & .delete-button {\n      justify-content: center;\n      width: 100%;\n      border: none;\n      height: $item-height+10px;\n      background-color: rgb(236, 236, 236);\n      color: gray;\n\n      &:hover {\n        cursor: pointer;\n      }\n    }\n  }\n}\n\n.items-container {\n  width: 100%;\n  overflow-y: scroll;\n\n  #{&}__item {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: 0 5px;\n    height: $item-height;\n    border-bottom: 1px solid lightgrey;\n    transition: all 1s linear;\n\n    &.invisible {\n      transform: translateX(-500px);\n    }\n\n    &.dragg {\n      opacity: 0.5;\n    }\n\n    &.editor {\n      background-color: blanchedalmond;\n    }\n\n    & .number {\n      width: 10%;\n    }\n\n    & .description {\n      width: 50%;\n      border: none;\n      background-color: transparent;\n      padding: 0 3px;\n\n      &:enabled {\n        color: black;\n        border: 1px solid gray;\n      }\n\n      &:disabled {\n        color: black;\n      }\n    }\n\n    & i {\n      text-align: center;\n      width: 20px;\n\n      &:hover {\n        cursor: pointer;\n      }\n\n      &.hold {\n        transition: all 2s linear;\n        transform: scale(1.5);\n      }\n    }\n\n    & [type='checkbox'] {\n      width: 15px;\n      height: 15px;\n    }\n\n    & .btn-cancel {\n      background-color: transparent;\n      border: none;\n      text-decoration: underline;\n      font-size: 0.6em;\n      color: red;\n\n      &:hover {\n        cursor: pointer;\n      }\n    }\n  }\n\n  & .line-trhough {\n    text-decoration: line-through;\n  }\n}\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nul {\n  padding-inline-start: 0;\n  list-style: none;\n  margin-block-start: 0;\n  margin-block-end: 0;\n}\n\na {\n  text-decoration: none;\n  word-wrap: break-word;\n}\n\n::before {\n  box-sizing: border-box;\n}\n\n::after {\n  box-sizing: border-box;\n}\n\nbody {\n  font-family: \"Roboto\", arial, helvetica, sans-serif;\n}\n\nmain {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.container {\n  width: 500px;\n  min-height: 400px;\n  max-height: 800px;\n  box-shadow: 3px 3px 5px 5px lightgray;\n  display: flex;\n  flex-direction: column;\n}\n.container .container__header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  min-height: 45px;\n  padding: 0 5px;\n  border-bottom: 1px solid lightgrey;\n}\n.container .container__header input {\n  border: none;\n  width: 80%;\n  height: 80%;\n  padding: 5px;\n  font-style: italic;\n}\n.container .container__header i {\n  text-align: center;\n  width: 20px;\n}\n.container .container__header i:hover {\n  cursor: pointer;\n}\n.container .container__footer {\n  height: 55px;\n  display: flex;\n  margin-top: auto;\n}\n.container .container__footer .delete-button {\n  justify-content: center;\n  width: 100%;\n  border: none;\n  height: 55px;\n  background-color: rgb(236, 236, 236);\n  color: gray;\n}\n.container .container__footer .delete-button:hover {\n  cursor: pointer;\n}\n\n.items-container {\n  width: 100%;\n  overflow-y: scroll;\n  position: relative;\n}\n.items-container .items-container__item {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  width: 100%;\n  padding: 0 5px;\n  height: 45px;\n  border-bottom: 1px solid lightgrey;\n  transition: all 0.5s linear;\n}\n.items-container .items-container__item.invisible {\n  transition: all 1s linear;\n  transform: translateX(-500px);\n}\n.items-container .items-container__item:active {\n  background-color: rgba(255, 208, 0, 0.712);\n  border: 2px solid;\n}\n.items-container .items-container__item.editor {\n  background-color: blanchedalmond;\n}\n.items-container .items-container__item .number {\n  width: 10%;\n}\n.items-container .items-container__item .description {\n  width: 50%;\n  border: none;\n  background-color: transparent;\n  padding: 0 3px;\n}\n.items-container .items-container__item .description:enabled {\n  color: black;\n  border: 1px solid gray;\n}\n.items-container .items-container__item .description:disabled {\n  color: black;\n}\n.items-container .items-container__item i {\n  text-align: center;\n  width: 20px;\n}\n.items-container .items-container__item i:hover {\n  cursor: pointer;\n}\n.items-container .items-container__item i.hold {\n  transition: all 2s linear;\n  transform: scale(1.5);\n}\n.items-container .items-container__item [type=checkbox] {\n  width: 15px;\n  height: 15px;\n}\n.items-container .items-container__item .btn-cancel {\n  background-color: transparent;\n  border: none;\n  text-decoration: underline;\n  font-size: 0.6em;\n  color: red;\n}\n.items-container .items-container__item .btn-cancel:hover {\n  cursor: pointer;\n}\n.items-container .line-trhough {\n  text-decoration: line-through;\n}", "",{"version":3,"sources":["webpack://./src/styles/2_base/_config.scss","webpack://./src/styles/main.scss"],"names":[],"mappings":"AAAA;EACE,SAAA;EACA,UAAA;EACA,sBAAA;ACCF;;ADGA;EACE,uBAAA;EACA,gBAAA;EACA,qBAAA;EACA,mBAAA;ACAF;;ADGA;EACE,qBAAA;EACA,qBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;ADGA;EACE,sBAAA;ACAF;;AAnBA;EACE,mDAHY;AAyBd;;AAnBA;EACE,aAAA;EACA,sBAAA;EACA,mBAAA;AAsBF;;AAnBA;EACE,YAAA;EACA,iBAAA;EACA,iBAAA;EACA,qCAAA;EACA,aAAA;EACA,sBAAA;AAsBF;AApBE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,gBAzBU;EA0BV,cAAA;EACA,kCAAA;AAsBJ;AApBI;EACE,YAAA;EACA,UAAA;EACA,WAAA;EACA,YAAA;EACA,kBAAA;AAsBN;AAnBI;EACE,kBAAA;EACA,WAAA;AAqBN;AAnBM;EACE,eAAA;AAqBR;AAhBE;EACE,YAAA;EACA,aAAA;EACA,gBAAA;AAkBJ;AAhBI;EACE,uBAAA;EACA,WAAA;EACA,YAAA;EACA,YAAA;EACA,oCAAA;EACA,WAAA;AAkBN;AAhBM;EACE,eAAA;AAkBR;;AAZA;EACE,WAAA;EACA,kBAAA;EACA,kBAAA;AAeF;AAbE;EACE,aAAA;EACA,8BAAA;EACA,mBAAA;EACA,WAAA;EACA,cAAA;EACA,YA9EU;EA+EV,kCAAA;EACA,2BAAA;AAeJ;AAbI;EACE,yBAAA;EACA,6BAAA;AAeN;AAZI;EACE,0CAAA;EACA,iBAAA;AAcN;AAXI;EACE,gCAAA;AAaN;AAVI;EACE,UAAA;AAYN;AATI;EACE,UAAA;EACA,YAAA;EACA,6BAAA;EACA,cAAA;AAWN;AATM;EACE,YAAA;EACA,sBAAA;AAWR;AARM;EACE,YAAA;AAUR;AANI;EACE,kBAAA;EACA,WAAA;AAQN;AANM;EACE,eAAA;AAQR;AALM;EACE,yBAAA;EACA,qBAAA;AAOR;AAHI;EACE,WAAA;EACA,YAAA;AAKN;AAFI;EACE,6BAAA;EACA,YAAA;EACA,0BAAA;EACA,gBAAA;EACA,UAAA;AAIN;AAFM;EACE,eAAA;AAIR;AACE;EACE,6BAAA;AACJ","sourcesContent":["* {\r\n  margin: 0;\r\n  padding: 0;\r\n  box-sizing: border-box;\r\n}\r\n\r\n//yeah I get ride of that hideous padding once and for all for all my ul!!\r\nul {\r\n  padding-inline-start: 0;\r\n  list-style: none;\r\n  margin-block-start: 0;\r\n  margin-block-end: 0;\r\n}\r\n\r\na {\r\n  text-decoration: none;\r\n  word-wrap: break-word;\r\n}\r\n\r\n::before {\r\n  box-sizing: border-box;\r\n}\r\n\r\n::after {\r\n  box-sizing: border-box;\r\n}\r\n","@import '2_base/config';\r\n\r\n$item-height: 45px;\r\n$font-family: 'Roboto', arial, helvetica, sans-serif;\r\n\r\nbody {\r\n  font-family: $font-family;\r\n}\r\n\r\nmain {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n}\r\n\r\n.container {\r\n  width: 500px;\r\n  min-height: 400px;\r\n  max-height: 800px;\r\n  box-shadow: 3px 3px 5px 5px lightgray;\r\n  display: flex;\r\n  flex-direction: column;\r\n\r\n  #{&}__header {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    min-height: $item-height;\r\n    padding: 0 5px;\r\n    border-bottom: 1px solid lightgrey;\r\n\r\n    & input {\r\n      border: none;\r\n      width: 80%;\r\n      height: 80%;\r\n      padding: 5px;\r\n      font-style: italic;\r\n    }\r\n\r\n    & i {\r\n      text-align: center;\r\n      width: 20px;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n    }\r\n  }\r\n\r\n  #{&}__footer {\r\n    height: $item-height + 10;\r\n    display: flex;\r\n    margin-top: auto;\r\n\r\n    & .delete-button {\r\n      justify-content: center;\r\n      width: 100%;\r\n      border: none;\r\n      height: $item-height+10px;\r\n      background-color: rgb(236, 236, 236);\r\n      color: gray;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n    }\r\n  }\r\n}\r\n\r\n.items-container {\r\n  width: 100%;\r\n  overflow-y: scroll;\r\n  position: relative;\r\n\r\n  #{&}__item {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    align-items: center;\r\n    width: 100%;\r\n    padding: 0 5px;\r\n    height: $item-height;\r\n    border-bottom: 1px solid lightgrey;\r\n    transition: all 0.5s linear;\r\n\r\n    &.invisible {\r\n      transition: all 1s linear;\r\n      transform: translateX(-500px);\r\n    }\r\n\r\n    &:active {\r\n      background-color: rgba(255, 208, 0, 0.712);\r\n      border: 2px solid;\r\n    }\r\n\r\n    &.editor {\r\n      background-color: blanchedalmond;\r\n    }\r\n\r\n    & .number {\r\n      width: 10%;\r\n    }\r\n\r\n    & .description {\r\n      width: 50%;\r\n      border: none;\r\n      background-color: transparent;\r\n      padding: 0 3px;\r\n\r\n      &:enabled {\r\n        color: black;\r\n        border: 1px solid gray;\r\n      }\r\n\r\n      &:disabled {\r\n        color: black;\r\n      }\r\n    }\r\n\r\n    & i {\r\n      text-align: center;\r\n      width: 20px;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n\r\n      &.hold {\r\n        transition: all 2s linear;\r\n        transform: scale(1.5);\r\n      }\r\n    }\r\n\r\n    & [type='checkbox'] {\r\n      width: 15px;\r\n      height: 15px;\r\n    }\r\n\r\n    & .btn-cancel {\r\n      background-color: transparent;\r\n      border: none;\r\n      text-decoration: underline;\r\n      font-size: 0.6em;\r\n      color: red;\r\n\r\n      &:hover {\r\n        cursor: pointer;\r\n      }\r\n    }\r\n  }\r\n\r\n  & .line-trhough {\r\n    text-decoration: line-through;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
