@@ -4,7 +4,7 @@
   "description": "![](https://img.shields.io/badge/Microverse-blueviolet)",
   "main": "webpack.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "gh-pages -d dist",
     "dev": "webpack serve",
     "watch": "webpack --watch",
     "start": "webpack serve --open",
@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/LuisDavidRodriguez/To-do-list/issues"
   },
-  "homepage": "https://github.com/LuisDavidRodriguez/To-do-list#readme",
+  "homepage": "https://LuisDavidRodriguez.github.io/To-do-list",
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.5",
@@ -45,6 +45,7 @@
     "@babel/core": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
     "@fortawesome/fontawesome-svg-core": "^6.1.2",
+    "gh-pages": "^4.0.0",
     "sass": "^1.54.3"
   }
 }
