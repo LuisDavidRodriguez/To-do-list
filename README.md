@@ -9,7 +9,6 @@
 ## functioniality dragg and reorder added just click, dragg and drop the element where you want it!
 ![Mi video-2](https://user-images.githubusercontent.com/105079888/184254115-292db72a-5df3-43e5-ba13-edaacdd75381.gif)
 ![image](https://user-images.githubusercontent.com/105079888/184032224-44ab6a63-140b-4835-8ff0-40623d533ac4.png)
-![image](https://user-images.githubusercontent.com/105079888/184252895-1930dd77-8325-462c-8896-54c4d4808e65.png)
 
 
 
