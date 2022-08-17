@@ -1,7 +1,4 @@
-/* eslint-disable lines-between-class-members */
-/* eslint-disable no-plusplus */
-
-export default class ActivitiesManager {
+class ActivitiesManager {
   #activitiesArr = [];
   #createTask = (description, completed, number) => ({ description, completed, number });
   #taskContainer;
@@ -154,7 +151,7 @@ export default class ActivitiesManager {
       liContainer.classList.add('invisible');
       setTimeout(() => {
         liContainer.remove();
-        this.deleteFromState(i);
+        this.#deleteFromState(i);
       }, 1000);
     });
 
