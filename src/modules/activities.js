@@ -7,11 +7,18 @@ export default class ActivitiesManager {
   #taskContainer;
   #storage;
 
-  constructor(taskContainer, storage) {
+  constructor(taskContainer, storage = null) {
     this.#taskContainer = taskContainer;
     this.#storage = storage;
-    this.storageAvailable = storage.storageAvailable();
-    if (this.storageAvailable) this.#activitiesArr = this.#storage.getTask();
+    this.storageAvailable = false;
+
+    if (storage !== null) {
+      this.storageAvailable = storage.storageAvailable();
+    }
+
+    if (this.storageAvailable) {
+      this.#activitiesArr = this.#storage.getTask();
+    }
   }
 
   get size() {
@@ -35,7 +42,7 @@ export default class ActivitiesManager {
     this.#saveLocal();
   }
 
-  #deleteFromState(index) {
+  deleteFromState(index) {
     this.#activitiesArr.splice(index, 1);
     this.#saveLocal();
     console.log(this.#activitiesArr);
@@ -154,7 +161,7 @@ export default class ActivitiesManager {
       liContainer.classList.add('invisible');
       setTimeout(() => {
         liContainer.remove();
-        this.#deleteFromState(i);
+        this.deleteFromState(i);
       }, 1000);
     });
 
