@@ -7,7 +7,7 @@ export default class ActivitiesManager {
   #taskContainer;
   #storage;
 
-  constructor(taskContainer, storage) {
+  constructor(taskContainer, storage = null) {
     this.#taskContainer = taskContainer;
     this.#storage = storage;
     this.storageAvailable = storage.storageAvailable();
