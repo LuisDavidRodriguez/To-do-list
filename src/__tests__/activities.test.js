@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 /* eslint-disable*/
-import ActivitiesManager from '../__mocks__/activities.js';
+import ActivitiesManager from '../modules/activities.js';
 
 describe('Task1', () => {
 
