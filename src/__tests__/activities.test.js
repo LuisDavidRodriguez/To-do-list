@@ -2,39 +2,43 @@
  * @jest-environment jsdom
  */
 /* eslint-disable*/
-import ActivitiesManager from '../modules/activities.js';
-import * as storage from '../modules/dataStorage.js';
+import ActivitiesManager from '../__mocks__/activities.js';
 
-test('Testing activities Manager Add', () => {
-  document.body.innerHTML = 
-  '<div>' +
-    '<ul id="itemsContainer"></ul>' +
-  '</div>';
+describe('Task1', () => {
 
-  const listContainer = document.querySelector('#itemsContainer');
-  const activitiesManager = new ActivitiesManager(listContainer, storage);
-  activitiesManager.addTask('task as probe');
+  it('Testing activities Manager Add', () => {
+    document.body.innerHTML = 
+    '<div>' +
+      '<ul id="itemsContainer"></ul>' +
+    '</div>';
   
-  const elements = document.querySelectorAll('#itemsContainer li');
-  expect(elements).toHaveLength(1);
+    const listContainer = document.querySelector('#itemsContainer');
+    const activitiesManager = new ActivitiesManager(listContainer);
+    activitiesManager.addTask('task as probe');
+    
+    const elements = document.querySelectorAll('#itemsContainer li');
+    expect(elements).toHaveLength(1);
+  });
+
+  it('Testing activities Manager Delete', () => {
+    document.body.innerHTML = 
+    `<div> 
+      <ul id="itemsContainer">
+      </ul>
+    </div>`;
+  
+    const listContainer = document.querySelector('#itemsContainer');
+    const activitiesManager = new ActivitiesManager(listContainer);
+    activitiesManager.addTask('task 1');
+    activitiesManager.addTask('task 2');
+    activitiesManager.addTask('task 3');
+    activitiesManager.addTask('task 4');
+    activitiesManager.addTask('task 5');
+  
+    activitiesManager.deleteFromState(2);  
+    
+    const elements = document.querySelectorAll('#itemsContainer li');
+    expect(elements).toHaveLength(4);
+  });
 });
 
-test('Testing activities Manager Delete', () => {
-  document.body.innerHTML = 
-  `<div> 
-    <ul id="itemsContainer">
-    </ul>
-  </div>`;
-
-  const listContainer = document.querySelector('#itemsContainer');
-  const activitiesManager = new ActivitiesManager(listContainer, storage);
-  activitiesManager.addTask('task as probe');
-  activitiesManager.addTask('task as probe');
-  activitiesManager.addTask('task as probe');
-
-  activitiesManager.deleteFromState(2);
-
-  
-  const elements = document.querySelectorAll('#itemsContainer li');
-  expect(elements).toHaveLength(2);
-});

@@ -1,4 +1,7 @@
-class ActivitiesManager {
+/* eslint-disable lines-between-class-members */
+/* eslint-disable no-plusplus */
+
+export default class ActivitiesManager {
   #activitiesArr = [];
   #createTask = (description, completed, number) => ({ description, completed, number });
   #taskContainer;
@@ -7,8 +10,15 @@ class ActivitiesManager {
   constructor(taskContainer, storage = null) {
     this.#taskContainer = taskContainer;
     this.#storage = storage;
-    this.storageAvailable = storage.storageAvailable();
-    if (this.storageAvailable) this.#activitiesArr = this.#storage.getTask();
+    this.storageAvailable = false;
+
+    if (storage !== null) {
+      this.storageAvailable = storage.storageAvailable();
+    }
+
+    if (this.storageAvailable) {
+      this.#activitiesArr = this.#storage.getTask();
+    }
   }
 
   get size() {
@@ -151,7 +161,7 @@ class ActivitiesManager {
       liContainer.classList.add('invisible');
       setTimeout(() => {
         liContainer.remove();
-        this.#deleteFromState(i);
+        this.deleteFromState(i);
       }, 1000);
     });
 

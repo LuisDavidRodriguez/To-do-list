@@ -10,8 +10,15 @@ export default class ActivitiesManager {
   constructor(taskContainer, storage = null) {
     this.#taskContainer = taskContainer;
     this.#storage = storage;
-    this.storageAvailable = storage.storageAvailable();
-    if (this.storageAvailable) this.#activitiesArr = this.#storage.getTask();
+    this.storageAvailable = false;
+
+    if (storage !== null) {
+      this.storageAvailable = storage.storageAvailable();
+    }
+
+    if (this.storageAvailable) {
+      this.#activitiesArr = this.#storage.getTask();
+    }
   }
 
   get size() {
